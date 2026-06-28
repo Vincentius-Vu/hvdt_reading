@@ -44,6 +44,7 @@ function App() {
   const [isTocOpen, setIsTocOpen] = useState(false);
   const [isGraphVisible, setIsGraphVisible] = useState(false); // Mặc định ẩn
   const [fontSize, setFontSize] = useState(1.05); // rem
+  const [lang, setLang] = useState('vi'); // 'vi' or 'en'
   
   // Resizing state
   const [readerWidth, setReaderWidth] = useState(45);
@@ -57,7 +58,9 @@ function App() {
   };
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}book.md`)
+    setMarkdownContent(''); // clear content while loading
+    const file = lang === 'en' ? 'book_en.md' : 'book.md';
+    fetch(`${import.meta.env.BASE_URL}${file}`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.text();
@@ -90,7 +93,7 @@ function App() {
         console.error("Could not load book content:", err);
         setMarkdownContent(`> Lỗi không tải được nội dung sách: ${err.message}. Kiểm tra lại đường dẫn file \`book.md\`.`);
       });
-  }, []);
+  }, [lang]);
 
   const handleNodeClick = useCallback((node) => {
     setActiveNode(node);
@@ -196,6 +199,10 @@ function App() {
         '--reader-font-size': `${fontSize}rem`
       }}>
         <div className="reader-topbar">
+          <div className="lang-controls">
+            <button className={lang === 'vi' ? 'active' : ''} onClick={() => setLang('vi')}>VI</button>
+            <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')}>EN</button>
+          </div>
           <div className="text-controls">
             <button onClick={() => setFontSize(f => Math.max(0.8, +(f - 0.1).toFixed(1)))} title="Giảm cỡ chữ">A-</button>
             <button onClick={() => setFontSize(f => Math.min(2.0, +(f + 0.1).toFixed(1)))} title="Tăng cỡ chữ">A+</button>

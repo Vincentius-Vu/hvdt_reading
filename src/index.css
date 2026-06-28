@@ -215,10 +215,39 @@ body {
   top: -2.5rem; /* align with padding */
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   padding: 1.5rem 0 1rem;
   background: linear-gradient(to bottom, #0a0a0f 70%, transparent);
   z-index: 10;
   margin-top: -1rem;
+}
+
+.lang-controls {
+  display: flex;
+  gap: 0.2rem;
+  margin-right: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.lang-controls button {
+  background: transparent;
+  border: none;
+  color: #888;
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.lang-controls button.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 .text-controls {
