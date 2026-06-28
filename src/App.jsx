@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Menu, X, Network } from 'lucide-react';
+import { Menu, X, Network, Mail } from 'lucide-react';
 import EcosystemGraph from './components/EcosystemGraph.jsx';
 import InfoPanel from './components/InfoPanel.jsx';
 import { ecosystemData } from './data/index.js';
@@ -45,6 +45,7 @@ function App() {
   const [isGraphVisible, setIsGraphVisible] = useState(false); // Mặc định ẩn
   const [fontSize, setFontSize] = useState(1.05); // rem
   const [lang, setLang] = useState('vi'); // 'vi' or 'en'
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
   
   // Resizing state
   const [readerWidth, setReaderWidth] = useState(45);
@@ -202,6 +203,7 @@ function App() {
           <div className="lang-controls">
             <button className={lang === 'vi' ? 'active' : ''} onClick={() => setLang('vi')}>VI</button>
             <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')}>EN</button>
+            <button className="inbox-btn" onClick={() => setIsInboxOpen(true)} title="Nhắn tin cho tác giả"><Mail size={16} /></button>
           </div>
           <div className="text-controls">
             <button onClick={() => setFontSize(f => Math.max(0.8, +(f - 0.1).toFixed(1)))} title="Giảm cỡ chữ">A-</button>
@@ -273,8 +275,62 @@ function App() {
           </div>
         </div>
       )}
+      {/* Inbox Modal */}
+      <InboxModal isOpen={isInboxOpen} onClose={() => setIsInboxOpen(false)} lang={lang} />
     </div>
   );
 }
+
+const InboxModal = ({ isOpen, onClose, lang }) => {
+  const [status, setStatus] = useState('');
+  
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus(lang === 'vi' ? 'Đang gửi...' : 'Sending...');
+    const formData = new FormData(e.target);
+    formData.append("access_key", "753f3a91-8c95-417e-afb7-a479b7dec5db");
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStatus(lang === 'vi' ? 'Đã gửi thành công!' : 'Sent successfully!');
+        e.target.reset();
+        setTimeout(() => {
+          onClose();
+          setStatus('');
+        }, 2000);
+      } else {
+        setStatus(lang === 'vi' ? 'Có lỗi xảy ra, vui lòng thử lại.' : 'Error occurred, please try again.');
+      }
+    } catch (err) {
+      setStatus(lang === 'vi' ? 'Lỗi kết nối.' : 'Connection error.');
+    }
+  };
+
+  return (
+    <div className="inbox-overlay" onClick={onClose}>
+      <div className="inbox-modal" onClick={e => e.stopPropagation()}>
+        <button className="inbox-close" onClick={onClose}><X size={20} /></button>
+        <h2>{lang === 'vi' ? 'Gắn kết Hiện sinh' : 'Existential Connection'}</h2>
+        <p>{lang === 'vi' ? 'Gửi phản hồi hoặc chia sẻ những khoảng trống ý nghĩa của bạn trực tiếp tới tác giả.' : 'Send feedback or share your gaps of meaning directly to the author.'}</p>
+        <form onSubmit={handleSubmit}>
+          <input type="text" name="name" placeholder={lang === 'vi' ? 'Tên của bạn' : 'Your name'} required />
+          <input type="email" name="email" placeholder={lang === 'vi' ? 'Email (để tác giả phản hồi)' : 'Email (for author reply)'} required />
+          <textarea name="message" rows="5" placeholder={lang === 'vi' ? 'Thông điệp của bạn...' : 'Your message...'} required></textarea>
+          <input type="hidden" name="subject" value="HVDT Reading App - New Feedback" />
+          <button type="submit" className="inbox-submit" disabled={status.includes('Đang') || status.includes('Sending')}>
+            {status || (lang === 'vi' ? 'Gửi thông điệp' : 'Send Message')}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export default App;
