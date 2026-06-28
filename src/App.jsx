@@ -76,6 +76,10 @@ function App() {
 
         // Pre-process markdown to inject hyperlinks for keywords
         let processed = text;
+        
+        // Loại bỏ các thẻ HTML rác (đặc biệt là thẻ <div> ngắt trang dùng cho PDF)
+        processed = processed.replace(/<\/?div[^>]*>/gi, '');
+
         Object.keys(keywordMap).forEach(kw => {
           const regex = new RegExp(`(?<!\\[)\\b(${kw})\\b(?!\\])`, 'gi');
           processed = processed.replace(regex, `[$1](#node-${keywordMap[kw]})`);
