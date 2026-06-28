@@ -57,8 +57,11 @@ function App() {
   };
 
   useEffect(() => {
-    fetch('/book.md')
-      .then(res => res.text())
+    fetch(`${import.meta.env.BASE_URL}book.md`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.text();
+      })
       .then(text => {
         // Extract headings for TOC (only H1, H2, H3)
         // Ignored code blocks by ensuring no backticks block
@@ -79,7 +82,10 @@ function App() {
         });
         setMarkdownContent(processed);
       })
-      .catch(err => console.error("Could not load book content:", err));
+      .catch(err => {
+        console.error("Could not load book content:", err);
+        setMarkdownContent(`> Lỗi không tải được nội dung sách: ${err.message}. Kiểm tra lại đường dẫn file \`book.md\`.`);
+      });
   }, []);
 
   const handleNodeClick = useCallback((node) => {
